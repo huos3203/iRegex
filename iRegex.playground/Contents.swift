@@ -15,11 +15,11 @@ import UIKit
 func highlightMatches(pattern: String, inString string: String) -> NSAttributedString {
     let regex = try! NSRegularExpression(pattern: pattern, options: [])
     let range = NSMakeRange(0, string.characters.count)
-    let matches = regex.matchesInString(string, options: [], range: range) 
+    let matches = regex.matches(in: string, options: [], range: range)
     
     let attributedText = NSMutableAttributedString(string: string)
     for match in matches {
-        attributedText.addAttribute(NSBackgroundColorAttributeName, value: UIColor.yellowColor(), range: match.range)
+        attributedText.addAttribute(NSAttributedStringKey.backgroundColor, value: UIColor.yellow, range: match.range)
     }
     
     return attributedText.copy() as! NSAttributedString
@@ -29,20 +29,20 @@ func highlightMatches(pattern: String, inString string: String) -> NSAttributedS
 func highlightMatchesByPart(pattern: String, inString string: String) -> NSAttributedString {
     let regex = try! NSRegularExpression(pattern: pattern, options: [])
     let range = NSMakeRange(0, string.characters.count)
-    let matches = regex.matchesInString(string, options: [], range: range)
+    let matches = regex.matches(in: string, options: [], range: range)
     
     let attributedText = NSMutableAttributedString(string: string)
-    let colorArray = [UIColor.blueColor(), UIColor.purpleColor(), UIColor.brownColor(), UIColor.greenColor(), UIColor.cyanColor(), UIColor.whiteColor(), UIColor.darkGrayColor(), UIColor.lightGrayColor(), UIColor.magentaColor(), UIColor.orangeColor(), UIColor.redColor()]
-    for (index, match) in matches.enumerate() {
-        attributedText.addAttribute(NSBackgroundColorAttributeName, value: UIColor.yellowColor(), range: match.range)
+    let colorArray = [UIColor.blue, UIColor.purple, UIColor.brown, UIColor.green, UIColor.cyan, UIColor.white, UIColor.darkGray, UIColor.lightGray, UIColor.magenta, UIColor.orange, UIColor.red]
+    for (index, match) in matches.enumerated() {
+        attributedText.addAttribute(NSAttributedStringKey.backgroundColor, value: UIColor.yellow, range: match.range)
         var innerIndex = 1;
         match.numberOfRanges
         while(innerIndex < match.numberOfRanges) {
-            let range = match.rangeAtIndex(innerIndex)
+            let range = match.range(at: innerIndex)
             range.length
             range.location
             innerIndex
-            attributedText.addAttribute(NSForegroundColorAttributeName, value: colorArray[innerIndex-1], range:range)
+            attributedText.addAttribute(NSAttributedStringKey.foregroundColor, value: colorArray[innerIndex-1], range:range)
             innerIndex = innerIndex + 1;
             innerIndex
         }
@@ -55,24 +55,24 @@ func listMatches(pattern: String, inString string: String) -> [String] {
 
     let regex = try! NSRegularExpression(pattern: pattern, options: [])
     let range = NSMakeRange(0, string.characters.count)
-    let matches = regex.matchesInString(string, options: [], range: range)
+    let matches = regex.matches(in: string, options: [], range: range)
     return matches.map {
         let range = $0.range
-        return (string as NSString).substringWithRange(range)
+        return (string as NSString).substring(with: range)
     }
 }
 
 func listGroups(pattern: String, inString string: String) -> [String] {
     let regex = try! NSRegularExpression(pattern: pattern, options:[])
     let range = NSMakeRange(0, string.characters.count)
-    let matches = regex.matchesInString(string, options:[], range: range)
+    let matches = regex.matches(in: string, options:[], range: range)
     
     var groupMatches = [String]()
     for match in matches {
         let rangeCount = match.numberOfRanges
         
         for group in 0..<rangeCount {
-            groupMatches.append((string as NSString).substringWithRange(match.rangeAtIndex(group)))
+            groupMatches.append((string as NSString).substring(with: match.range(at: group)))
         }
     }
     
@@ -82,14 +82,14 @@ func listGroups(pattern: String, inString string: String) -> [String] {
 func containsMatch(pattern: String, inString string: String) -> Bool {
     let regex = try! NSRegularExpression(pattern: pattern, options: [])
     let range = NSMakeRange(0, string.characters.count)
-    return regex.firstMatchInString(string, options:[], range: range) != nil
+    return regex.firstMatch(in: string, options:[], range: range) != nil
 }
 
 func replaceMatches(pattern: String, inString string: String, withString replacementString: String) -> String? {
     let regex = try! NSRegularExpression(pattern: pattern, options:[])
     let range = NSMakeRange(0, string.characters.count)
     
-    return regex.stringByReplacingMatchesInString(string, options:[], range: range, withTemplate: replacementString)
+    return regex.stringByReplacingMatches(in: string, options:[], range: range, withTemplate: replacementString)
 }
 
 //: ## Basic Examples
@@ -98,17 +98,17 @@ func replaceMatches(pattern: String, inString string: String, withString replace
 
 let quickFox = "The quick brown fox jumps over the lazy dog."
 
-listMatches("jump", inString: quickFox)
+listMatches(pattern: "jump", inString: quickFox)
 
 //: This next example uses some special characters that are available in regular expressions. The parenthesis create a group, and the question mark says "match the previous element (the group in this case) 0 or 1 times". It matches either 'jump' or 'jumps':
 
-listMatches("jump(s)?", inString: quickFox)
+listMatches(pattern: "jump(s)?", inString: quickFox)
 
 //: This one matches an HTML or XML tag:
 
 let htmlString = "<p>This is an example <strong>html</strong> string.</p>"
 
-listMatches("<([a-z][a-z0-9]*)\\b[^>]*>(.*?)", inString: htmlString)
+listMatches(pattern: "<([a-z][a-z0-9]*)\\b[^>]*>(.*?)", inString: htmlString)
 
 //: Wow, looks complicated, eh? :] Hopefully things will become a bit more clear as you look through the rest of the examples here!
 
@@ -117,87 +117,87 @@ listMatches("<([a-z][a-z0-9]*)\\b[^>]*>(.*?)", inString: htmlString)
 //: **.** matches any character. `p.p` matches pop, pup, pmp, p@p, and so on.
 
 let anyExample = "pip, pop, p%p, paap, piip, puup, pippin"
-listMatches("p.p", inString: anyExample)
+listMatches(pattern: "p.p", inString: anyExample)
 
 //:  **\w** matches any 'word-like' character which includes the set of numbers, letters, and underscore, but does not match punctuation or other symbols. `hello\w` will match "hello_9" and "helloo" but not "hello!"
 
 let wordExample = "hello helloooooo hello_1114 hello, hello!"
-listMatches("hello\\w+", inString: wordExample)
+listMatches(pattern: "hello\\w+", inString: wordExample)
 
 //: **\d** matches a numeric digit, which in most cases means `[0-9]`. `\d\d?:\d\d` will match strings in time format, such as "9:30" and "12:45".
 
 let digitExample = "9:30 12:45 df:24 ag:gh"
-listMatches("\\d?\\d:\\d\\d", inString: digitExample)
+listMatches(pattern: "\\d?\\d:\\d\\d", inString: digitExample)
 
 //: **\b** matches word boundary characters such as spaces and punctuation. `to\b` will match the "to" in "to the moon" and "to!", but it will not match "tomorrow". `\b` is handy for "whole word" type matching.
 
 let boundaryExample = "to the moon! when to go? tomorrow?"
-listMatches("to\\b", inString: boundaryExample)
+listMatches(pattern: "to\\b", inString: boundaryExample)
 
 //: **\s** matches whitespace characters such as spaces, tabs, and newlines. `hello\s` will match "hello " in "Well, hello there!".
 
 let whitespaceExample = "Well, hello there!"
-listMatches("hello\\s", inString: whitespaceExample)
+listMatches(pattern: "hello\\s", inString: whitespaceExample)
 
 //: **^** matches at the beginning of a line. Note that this particular ^ is different from ^ inside of the square brackets! For example, `^Hello` will match against the string "Hello there", but not "He said Hello".
 
 let beginningExample = "Hello there! He said hello."
-highlightMatches("^Hello", inString: beginningExample)
-highlightMatchesByPart("^(Hello) (\\S*)", inString: beginningExample)
+highlightMatches(pattern: "^Hello", inString: beginningExample)
+highlightMatchesByPart(pattern: "^(Hello) (\\S*)", inString: beginningExample)
 
 //: **$** matches at the end of a line. For example, `the end$` will match against "It was the end" but not "the end was near"
 
 let endExample = "The end was near. It was the end"
-highlightMatches("end$", inString: endExample)
+highlightMatches(pattern: "end$", inString: endExample)
 
 //: **\*** matches the previous element 0 or more times. `12*3` will match 13, 123, 1223, 122223, and 1222222223.
 
 let zeroOrMoreExample = "13, 123, 1223, 122223, 1222222223, 143222343"
-highlightMatches("12*3", inString: zeroOrMoreExample)
+highlightMatches(pattern: "12*3", inString: zeroOrMoreExample)
 
 //: **+** matches the previous element 1 or more times. `12+3` will match 123, 1223, 122223, 1222222223, but not 13.
 
 let oneOrMoreExample = "13, 123, 1223, 122223, 1222222223, 143222343"
-highlightMatches("12+3", inString: oneOrMoreExample)
+highlightMatches(pattern: "12+3", inString: oneOrMoreExample)
 
 //: `?` matches the previous element 0 or 1 times. `12?3` will match 13 or 123, but not 1223.
 
 let possibleExample = "13, 123, 1223"
-highlightMatches("12?3", inString: oneOrMoreExample)
+highlightMatches(pattern: "12?3", inString: oneOrMoreExample)
 
 //: Curly braces **{ }** contain the minimum and maximum number of matches. For example, `10{1,2}1` will match both "101" and "1001" but not "10001" as the minimum number of matches is 1 and the maximum number of matches is 2. `He[Ll]{2,}o` will match "HeLLo" and "HellLLLllo" and any such silly variation of "hello" with lots of L’s, since the minimum number of matches is 2 but the maximum number of matches is not set — and therefore unlimited!
 
 let numberExample1 = "101 1001 10001"
 let numberExample2 = "HeLLo HellLLLllo"
-highlightMatches("10{1,2}1", inString: numberExample1)
-highlightMatches("He[Ll]{2,}", inString: numberExample2)
+highlightMatches(pattern: "10{1,2}1", inString: numberExample1)
+highlightMatches(pattern: "He[Ll]{2,}", inString: numberExample2)
 
 //: Capturing parentheses **( )** are used to group part of a pattern. For example, `3 (pm|am)` would match the text "3 pm" as well as the text "3 am". The pipe character here (|) acts like an OR operator.
 
 let cinema = "Are we going to the cinema at 3 pm or 5 pm?"
-listMatches("\\d (am|pm)", inString: cinema)
-listGroups("(\\d (am|pm))", inString: cinema)
+listMatches(pattern: "\\d (am|pm)", inString: cinema)
+listGroups(pattern: "(\\d (am|pm))", inString: cinema)
 
 //: You can include as many pipe characters in your regular expression as you would like. As an example, `(Tom|Dick|Harry)` is a valid pattern.
 
 let greeting = "Hello Tom, Dick, Harry!"
-listMatches("(Tom|Dick|Harry)", inString: greeting)
-replaceMatches("(Tom|Dick|Harry)", inString: greeting, withString: "James")
+listMatches(pattern: "(Tom|Dick|Harry)", inString: greeting)
+replaceMatches(pattern: "(Tom|Dick|Harry)", inString: greeting, withString: "James")
 
 //: Character classes represent a set of possible single-character matches. Character classes appear between square brackets **[ ]**.
 //: As an example, the regular expression `t[aeiou]` will match "ta", "te", "ti", "to", or "tu". You can have as many character possibilities inside the square brackets as you like, but remember that any single character in the set will match. `[aeiou]` _looks_ like five characters, but it actually means "a" or "e" or "i" or "o" or "u".
 
 let theVowels = "ta te ti to tu th tj tk tm"
-listMatches("t[aeiou]", inString: theVowels)
+listMatches(pattern: "t[aeiou]", inString: theVowels)
 
 //: You can also define a range in a character class if the characters appear consecutively. For example, to search for a number between 100 to 109, the pattern would be `10[0-9]`. This returns the same results as `10[0123456789]`, but using ranges makes your regular expressions much cleaner and easier to understand. Ranges can also be used for characters - for example, `[a-z]` matches all lowercase characters, or `[a-zA-Z]` matches all upper and lower case.
 
 let theNumbers = "100 101 105 121 229 816"
-listMatches("10[0-9]", inString: theNumbers)
-listMatches("t[a-h]", inString: theVowels)
+listMatches(pattern: "10[0-9]", inString: theNumbers)
+listMatches(pattern: "t[a-h]", inString: theVowels)
 
 //: Character classes usually contain the characters you _want_ to match, but what if you want to explicitly _not match_ a character? You can also define negated character classes, which use the `^` character. For example, the pattern `t[^o]` will match any combination of "t" and one other character _except_ for the single instance of "to".
 
 let notClasses = "tim tam tum tom tem"
-listMatches("t[^oa]m", inString: notClasses)
+listMatches(pattern: "t[^oa]m", inString: notClasses)
 
